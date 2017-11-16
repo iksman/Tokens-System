@@ -1,4 +1,4 @@
-import uuid
+import uuid, os
 
 # A simple system to create tokens in place of userId's
 # These tokens can be used to prove identity
@@ -11,7 +11,7 @@ class ReturnIntersceptor: #Used for easy reading of interactions between databas
   def __init__(self):
     self.log = []
   def interscept(self,senderName, sendeeName, data):
-    self.log += [str(senderName + " -> '" + str(data) + "' -> " + sendeeName)]
+    self.log += [str(sendeeName + " <- '" + str(data) + "' <- " + senderName)]
     return data
   def send(self, senderName, sendeeName , data, method):
     self.log += [str(senderName + " -> '" + str(data) + "' -> " + sendeeName)]
@@ -19,7 +19,6 @@ class ReturnIntersceptor: #Used for easy reading of interactions between databas
 
   def prettyPrint(self):
     itern = 0
-    print()
     for item in self.log:
       itern += 1
       
@@ -68,27 +67,60 @@ class Database():
           return item
     return "''"
 
+  def prettyPrint(self, key):
+    itern = 0
+    #print(key)
+    for item in self.data[key]:
+      itern += 1
+      if key == "users":
+        print(str(itern) + ". " + str(item["name"]))
+      else:
+        print(str(itern) + ". " + str(item))
+
 i = ReturnIntersceptor()
 db = Database()
-print(db.data['users'])
+
+
 
 while True:
-  text = input("Naam: ")                              #Log in with name
-                                                      #If name is found in database, return true and token
+  i = ReturnIntersceptor()
+  print("Users:")
+  db.prettyPrint("users")
+
+  while True:
+    text = input("\nName: ")                              #Log in with name
+                                                        #If name is found in database, return true and token
 
 
-  result =    i.interscept("DB", "User",              #Log return interaction of DB to User
-              i.send("User", "DB", text, db.login))   #Log initial interaction of User to DB
-  if result[0] == True:
+    result =    i.interscept("DB", "User",              #Log return interaction of DB to User
+                i.send("User", "DB", text, db.login))   #Log initial interaction of User to DB
+    if result[0] == True:
+      break
+    else:
+      print("Not found\n")
+      i.log = []                                        #Clear Log
+
+  print("\nLogged in,")
+
+  while True:
+    print("User Data:")
+    print(i.interscept("DB", "User", i.send("User", "DB", result[1],db.getData))) #Print data with token
+
+    print("\nUser Token:")
+    print(result[1])
+
+
+    print("\nInteractions: ")
+    i.prettyPrint()                                       #Print Log
+
+    print("\nTokens currently in DB:")
+    db.prettyPrint("tokens")                              #Print entire database again
+    while True:
+      if input("?>") == "logout":
+        result = []
+        os.system('cls')
+        break
     break
-  else:
-    print("Not found\n")
-    i.log = []                                        #Clear Log
 
-print(i.interscept("DB", "User", i.send("User", "DB", result[1],db.getData))) #Print data with token
-
-i.prettyPrint()                                       #Print Log
-#print()
-#print(db.data)                                        #Print entire database again
 
 
