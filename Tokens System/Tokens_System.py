@@ -73,7 +73,10 @@ db = Database()
 print(db.data['users'])
 
 while True:
-  text = input("Naam: ")
+  text = input("Naam: ")                              #Log in with name
+                                                      #If name is found in database, return true and token
+
+
   result =    i.interscept("DB", "User",              #Log return interaction of DB to User
               i.send("User", "DB", text, db.login))   #Log initial interaction of User to DB
   if result[0] == True:
